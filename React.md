@@ -1,6 +1,6 @@
 # React
 
-> This article is a [React](https://www.udemy.com/course/the-ultimate-react-course/?srsltid=AfmBOoru8mEgkZL9W-1CvSSCrNJo6Wa8CFRjXaSN_BCuLNKOIeCYygpS&couponCode=V2JPLETSLEARN) course note.
+> This article is a [React](https://www.udemy.com/course/the-ultimate-react-course/) course note.
 > If there is any infringement, please contact me.
 
 ## 从一个 demo 开始
