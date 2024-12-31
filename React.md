@@ -63,7 +63,7 @@ function Message(props) {
     </head>
     <body>
       <div id="root"></div>
-
+  
       <script
         src="https://unpkg.com/react@18/umd/react.development.js"
         crossorigin
@@ -72,27 +72,27 @@ function Message(props) {
         src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
         crossorigin
       ></script>
-
+  
       <script>
         function App() {
           // const time = new Date().toLocaleTimeString();
           const [time, setTime] = React.useState(
             new Date().toLocaleTimeString()
           );
-
+  
           React.useEffect(function () {
             setInterval(function () {
               setTime(new Date().toLocaleTimeString());
             }, 1000);
           }, []);
-
+  
           return React.createElement(
             "header",
             null,
             `Hello React! It's ${time}`
           );
         }
-
+  
         const root = ReactDOM.createRoot(document.getElementById("root"));
         root.render(React.createElement(App));
       </script>
@@ -101,3 +101,40 @@ function Message(props) {
   ```
 
   - 缺陷：没有模块系统、无法转换 JSX 等
+
+#### 创建React 项目
+
+- 创建React项目的方式
+
+  - create-react-app
+  - create-next-app
+  - vite
+
+- `create-react-app`创建项目
+
+  - ```sh
+    npx create-react-app@5 pizza-menu
+    ```
+
+    
+
+#### 组件
+
+- React 应用程序完全由组件组成
+- React 中用户界面的构建模块
+- 拥有自己的数据、逻辑和外观的用户界面组件
+- 我们通过构建多个组件并将它们组合在一起来构建复杂的用户界面
+- 组件可以重复使用、相互嵌套并在它们之间传递数据
+
+#### JSX
+
+- 声明式语法可描述组件的外观和工作方式 
+- 组件必须返回一个 JSX 块 
+- JavaScript 的扩展，允许我们在 HTML 中嵌入 JavaScript、CSS 和 React 组件
+- 每个 JSX 元素都会转换为 React.createElement 函数调用 
+- 我们可以在没有 JSX 的情况下使用 React
+- 声明式
+  - 根据当前数据，使用 JSX 描述用户界面的样子  
+  - React 是对 DOM 的抽象：我们从不接触 DOM 
+  - 相反，我们认为用户界面是对当前数据的反映
+
