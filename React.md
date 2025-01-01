@@ -121,7 +121,7 @@ function Message(props) {
     npx create-react-app@5 pizza-menu
     ```
 
-### 组件 JSX props
+### 组件 属性 JSX
 
 [react-doc/02-pizza-menu](https://github.com/JacobSuCHN/react-doc/tree/main/code/02-pizza-menu)
 
@@ -134,24 +134,7 @@ function Message(props) {
 - 组件可以重复使用、相互嵌套并在它们之间传递数据
 - 组件可以用命名函数定义，也可以使用箭头函数赋值给对象定义
 
-#### JSX
-
-- 声明式语法可描述组件的外观和工作方式
-- 组件必须返回一个 JSX 块
-- JavaScript 的扩展，允许我们在 HTML 中嵌入 JavaScript、CSS 和 React 组件
-- 每个 JSX 元素都会转换为 React.createElement 函数调用
-- 我们可以在没有 JSX 的情况下使用 React
-- 声明式
-  - 根据当前数据，使用 JSX 描述用户界面的样子
-  - React 是对 DOM 的抽象：我们从不接触 DOM
-  - 相反，我们认为用户界面是对当前数据的反映
-- JSX 使用规则
-  - JSX 的工作原理与 HTML 基本相同，但我们可以通过使用 {}（文本或属性）
-  - 进入 "JavaScript 模式"，我们可以将 JavaScript 表达式（有返回值的式子）放在 {} 中
-  - 不允许使用语句（if/else、for、switch）
-  - 一个 JSX 片段只能有一个根元素；如果需要更多，请使用 （或短 <>）
-
-#### props
+#### 属性
 
 - props 用于将父组件数据传递给子组件
 - props 用于配置和自定义组件
@@ -188,6 +171,23 @@ function Pizza(props) {
   );
 }
 ```
+
+#### JSX
+
+- 声明式语法可描述组件的外观和工作方式
+- 组件必须返回一个 JSX 块
+- JavaScript 的扩展，允许我们在 HTML 中嵌入 JavaScript、CSS 和 React 组件
+- 每个 JSX 元素都会转换为 React.createElement 函数调用
+- 我们可以在没有 JSX 的情况下使用 React
+- 声明式
+  - 根据当前数据，使用 JSX 描述用户界面的样子
+  - React 是对 DOM 的抽象：我们从不接触 DOM
+  - 相反，我们认为用户界面是对当前数据的反映
+- JSX 使用规则
+  - JSX 的工作原理与 HTML 基本相同，但我们可以通过使用 {}（文本或属性）
+  - 进入 "JavaScript 模式"，我们可以将 JavaScript 表达式（有返回值的式子）放在 {} 中
+  - 不允许使用语句（if/else、for、switch）
+  - 一个 JSX 片段只能有一个根元素；如果需要更多，请使用 （或短 <>）
 
 #### 组件样式
 
@@ -331,3 +331,431 @@ function Menu() {
 ### 状态、事件和表单
 
 [react-doc/03-steps](https://github.com/JacobSuCHN/react-doc/tree/main/code/03-steps)
+[react-doc/04-travel-list](https://github.com/JacobSuCHN/react-doc/tree/main/code/04-travel-list)
+
+#### 事件
+
+- `onClick={}`：`{}`传入函数，传入的是本身，而不是函数调用
+- 函数传参时可以使用箭头函数
+- 函数可以定义在组件内
+
+#### 状态
+
+- 组件可长期保存的数据，是在整个应用程序生命周期中需要记住的必要信息
+- 组件内存
+- 状态变量"/"状态片段"：单个
+- 更新组件状态时触发 React 重新渲染组件
+- 状态的作用
+
+  - 更新组件视图（重新渲染）
+  - 在两次渲染之间持续保持本地变量
+
+  ```jsx
+  import { useState } from "react";
+  function Steps() {
+    const [step, setStep] = useState(1);
+    function handleNext() {
+      setStep(step + 1);
+    }
+  }
+  ```
+
+  - 只能在函数组件或自定义钩子内部调用：useState 不能在类组件中使用，它也不能在普通的 JavaScript 函数中使用，除非这些函数是作为自定义钩子被定义的
+  - 仅在顶层调用：useState 必须在函数组件或自定义钩子的最顶层调用，不能在条件语句、循环或嵌套函数中调用
+  - 更新状态使用状态更新函数，而不是修改状态（虽然对象的属性变换能监听到）
+  - 若基于当前状态更新，建议使用回调函数
+
+  ```jsx
+  function Steps() {
+    const [step, setStep] = useState(1);
+    function handleNext() {
+      setStep((s) => s + 1);
+    }
+  }
+  ```
+
+  - `UI = f(state)`
+  - 状态使用
+    - 使用状态变量来表示组件应长期跟踪（"记住"）的任何数据
+    - 每当希望组件中的某样东西是动态的，就创建一段与该 "东西" 相关的状态，并在该 "东西" 发生变化时更新状态（又称 "动态"）
+    - 如果要更改组件的外观或显示的数据，请更新其状态
+    - 构建组件时，将其视图想象为随时间变化的状态的反映
+    - 对于不应触发组件重新渲染的数据，不要使用状态。而应使用常规变量
+  - 同一组件的状态是独立的
+
+#### 表单
+
+```jsx
+function Form() {
+  function handleSubmit(e) {
+    e.preventDefault();
+  }
+
+  return (
+    <form className="add-form" onSubmit={handleSubmit}>
+      <h3>What do you need for your 😍 trip?</h3>
+      <select
+        value={quantity}
+        onChange={(e) => setQuantity(Number(e.target.value))}
+      >
+        {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+          <option value={num} key={num}>
+            {num}
+          </option>
+        ))}
+      </select>
+      <input type="text" placeholder="Item..." />
+      <button>Add</button>
+    </form>
+  );
+}
+```
+
+#### 受控元素
+
+- 它指的是其视图状态完全由 React 组件的 state 数据控制的元素
+
+```jsx
+function Form() {
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!description) return;
+
+    const newItem = { description, quantity, packed: false, id: Date.now() };
+
+    setDescription("");
+    setQuantity(1);
+  }
+
+  return (
+    <form className="add-form" onSubmit={handleSubmit}>
+      <h3>What do you need for your 😍 trip?</h3>
+      <select
+        value={quantity}
+        onChange={(e) => setQuantity(Number(e.target.value))}
+      >
+        {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+          <option value={num} key={num}>
+            {num}
+          </option>
+        ))}
+      </select>
+      <input
+        type="text"
+        placeholder="Item..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <button>Add</button>
+    </form>
+  );
+}
+```
+
+#### 状态与属性
+
+- 状态
+  - 由组件拥有的内部数据
+  - 组件 "存储器"
+  - 可由组件本身更新
+  - 更新状态会导致组件重新渲染
+  - 用于组件交互
+- 属性
+  - 外部数据，由父组件所有
+  - 与函数参数类似
+  - 只读
+  - 接收新属性（接受状态作为属性）会导致组件重新渲染，通常是在父节点的状态更新后
+  - 用于父组件配置子组件（设置）
+
+### 状态管理
+
+#### React 思维
+
+- 将所需的用户界面分解为多个组件，并建立组件树
+- 构建静态版本（无状态）
+- 考虑状态
+  - 何时使用状态
+  - 状态的类型：局部与全局
+  - 在何处放置每个状态片段
+- 建立数据流
+  - 单向数据流
+  - 父子组件通信
+  - 访问全局状态
+
+#### 局部状态与全局状态
+
+- 局部状态
+  - 只有一个或少数几个组件需要的状态
+  - 在一个组件中定义的状态，且只有该组件和子组件能访问它（通过属性传递）
+  - 应始终从局部状态出发
+- 全局状态
+  - 状态许多组件可能需要
+  - 每个组件都能访问的共享状态
+
+#### 状态提升
+
+- 状态提升（State Lifting）是一种设计模式，主要用于解决多个组件需要共享相同状态的情况
+  - 在父组件中定义状态：使用 React 的 useState 或类组件的 constructor 来定义状态
+  - 通过 props 传递状态及其更新函数：父组件通过 props 将状态及其更新函数传递给子组件
+  - 子组件使用 props 中的状态和更新函数：子组件通过 props 接收状态和更新函数，并在需要时调用更新函数来修改状态
+
+```jsx
+function App() {
+  const [items, setItems] = useState([]);
+
+  function handleAddItems(item) {
+    setItems((items) => [...items, item]);
+  }
+  return (
+    <div className="app">
+      <Logo />
+      <Form onAddItems={handleAddItems} />
+      <PackingList items={items} />
+      <Stats />
+    </div>
+  );
+}
+```
+
+```jsx
+function PackingList ( {items} ) {
+  return (
+    <div className="list">
+      <ul>
+        {items.map((item) => (
+          <Item
+            item={item}
+            key={item.id}
+          />
+        ))}
+      </ul>
+  );
+}
+```
+
+```jsx
+function Form({ onAddItems }) {
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!description) return;
+
+    const newItem = { description, quantity, packed: false, id: Date.now() };
+    onAddItems(newItem);
+    setDescription("");
+    setQuantity(1);
+  }
+
+  return (
+    <form className="add-form" onSubmit={handleSubmit}>
+      <h3>What do you need for your 😍 trip?</h3>
+      <select
+        value={quantity}
+        onChange={(e) => setQuantity(Number(e.target.value))}
+      >
+        {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+          <option value={num} key={num}>
+            {num}
+          </option>
+        ))}
+      </select>
+      <input
+        type="text"
+        placeholder="Item..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <button>Add</button>
+    </form>
+  );
+}
+```
+
+- 注意：`setItems((items) => [...items, item])`，不能使用`items.push(item)`，React 不允许，因为这改变了原数据
+
+#### 传递参数
+
+```jsx
+function Item({ item, onDeleteItem, onToggleItem }) {
+  return (
+    <li>
+      <input
+        type="checkbox"
+        value={item.packed}
+        onChange={() => onToggleItem(item.id)}
+      />
+      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
+        {item.quantity} {item.description}
+      </span>
+      <button onClick={() => onDeleteItem(item.id)}>❌</button>
+    </li>
+  );
+}
+```
+
+- 若直接使用`onClick={onDeleteItem}`，React 会将事件对象作为参数传入
+- `{}`应传入函数本身而不是函数调用，此处应改为`onClick={() => onDeleteItem(item.id)}`
+
+#### 派生状态
+
+- 指从现有状态或属性（props）中计算得出的状态
+- 组件重新渲染时会自动重新计算派生状态
+
+```js
+const [cart, setCart] = useState([
+  { name: "cart1", price: 10 },
+  { name: "cart2", price: 20 },
+]);
+const [numItems, setNumItems] = useState(2);
+const [totalPrice, setTotalPrice] = useState(30);
+```
+
+```js
+const [cart, setCart] = useState([
+  { name: "cart1", price: 10 },
+  { name: "cart2", price: 20 },
+]);
+const numItems = cart.length;
+const totalPrice = cart.reduce((acc, cur) => acc + cur.price, 0);
+```
+
+#### 拆分组件
+
+```jsx
+import { useState } from "react";
+import Logo from "./Logo";
+import Form from "./Form";
+import PackingList from "./PackingList";
+import Stats from "./Stats";
+
+export default function App() {
+  const [items, setItems] = useState([]);
+
+  function handleAddItems(item) {
+    setItems((items) => [...items, item]);
+  }
+
+  function handleDeleteItem(id) {
+    setItems((items) => items.filter((item) => item.id !== id));
+  }
+
+  function handleToggleItem(id) {
+    setItems((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, packed: !item.packed } : item
+      )
+    );
+  }
+
+  function handleClearList() {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete all items?"
+    );
+
+    if (confirmed) setItems([]);
+  }
+
+  return (
+    <div className="app">
+      <Logo />
+      <Form onAddItems={handleAddItems} />
+      <PackingList
+        items={items}
+        onDeleteItem={handleDeleteItem}
+        onToggleItem={handleToggleItem}
+        onClearList={handleClearList}
+      />
+      <Stats items={items} />
+    </div>
+  );
+}
+```
+
+```jsx
+export default function Logo() {
+  ...
+}
+
+```
+
+```jsx
+export default function Form({ onAddItems }) {
+  ...
+}
+
+```
+
+```jsx
+import Item from "./Item";
+
+export default function PackingList({
+  items,
+  onDeleteItem,
+  onToggleItem,
+  onClearList,
+}) {
+  ...
+}
+
+```
+
+```jsx
+export default function Stats({ items }) {
+  ...
+}
+
+```
+
+```jsx
+export default function Item({ item, onDeleteItem, onToggleItem }) {
+  ...
+}
+
+```
+
+#### children 属性
+
+- children 属性允许我们将 JSX 传递到元素中（除常规常规外）
+- 制作可重用和可配置组件（尤其是组件内容）的基本工具
+- 对于在使用前不知道其内容的通用组件（如模态）非常有用
+- 通过 props.children 访问
+
+```jsx
+function Steps() {
+  function handlePrevious() {}
+
+  function handleNext() {}
+
+  return (
+    <div className="buttons">
+      <Button bgColor="#7950f2" textColor="#fff" onClick={handlePrevious}>
+        <span>👈</span> Previous
+      </Button>
+
+      <Button bgColor="#7950f2" textColor="#fff" onClick={handleNext}>
+        Next <span>👉</span>
+      </Button>
+    </div>
+  );
+}
+```
+
+```jsx
+function Button({ textColor, bgColor, onClick, children }) {
+  return (
+    <button
+      style={{ backgroundColor: bgColor, color: textColor }}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+```
