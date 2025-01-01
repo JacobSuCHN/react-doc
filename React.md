@@ -7,7 +7,7 @@
 
 [react-doc/00-demo](https://github.com/JacobSuCHN/react-doc/tree/main/code/00-demo)
 
-```js
+```jsx
 import { useState, useEffect } from "react";
 export default function App() {
   const [advice, setAdvice] = useState("");
@@ -206,8 +206,6 @@ function Pizza(props) {
   ```jsx
   return <header className="header"></header>;
   ```
-
-####
 
 #### 列表渲染
 
@@ -608,7 +606,7 @@ function Item({ item, onDeleteItem, onToggleItem }) {
 - 指从现有状态或属性（props）中计算得出的状态
 - 组件重新渲染时会自动重新计算派生状态
 
-```js
+```jsx
 const [cart, setCart] = useState([
   { name: "cart1", price: 10 },
   { name: "cart2", price: 20 },
@@ -617,7 +615,7 @@ const [numItems, setNumItems] = useState(2);
 const [totalPrice, setTotalPrice] = useState(30);
 ```
 
-```js
+```jsx
 const [cart, setCart] = useState([
   { name: "cart1", price: 10 },
   { name: "cart2", price: 20 },
@@ -759,3 +757,527 @@ function Button({ textColor, bgColor, onClick, children }) {
   );
 }
 ```
+
+## React 强化
+
+### 组件 组合 复用
+
+[react-doc/05-usepopcorn](https://github.com/JacobSuCHN/react-doc/tree/main/code/05-usepopcorn)
+
+#### 组件拆分
+
+- 逻辑分隔内容/布局
+- 可重用性
+- 职责/复杂性
+- 个人编码方式
+
+- 注意
+  - 创建一个新组件就会创建一个新的抽象；抽象是有代价的，尽量不要过早创建新组件
+  - 根据组件的功能或显示内容为其命名，不要害怕使用长组件名
+  - 切勿在另一个组件内声明新组件！
+  - 将相关组件放在同一文件中。不要将组件分隔成过早出现不同文件
+  - 一个应用程序有许多不同大小的组件，这是完全正常的
+
+#### 组件类别
+
+- 无状态/介绍性组件
+  - 无状态
+  - 可以接收道具和仅此一次数据或其他内容
+  - 通常体积小，可重复使用
+- 有状态组件
+  - 有状态
+  - 可复用
+- 结构型组件
+  - 应用的页面、布局或界面
+  - 组件组合
+  - 组件复杂的、不可再用
+
+#### 属性钻取
+
+```jsx
+function App() {
+  const [movies, setMovies] = useState(tempMovieData);
+
+  return (
+    <>
+      <MovieList movies={movies} />
+    </>
+  );
+}
+```
+
+```jsx
+function MovieList({ movies }) {
+  return (
+    <ul className="list">
+      {movies?.map((movie) => (
+        <Movie movie={movie} key={movie.imdbID} />
+      ))}
+    </ul>
+  );
+}
+```
+
+```jsx
+function Movie({ movie }) {
+  return (
+    <li>
+      <img src={movie.Poster} alt={`${movie.Title} poster`} />
+      <h3>{movie.Title}</h3>
+      <div>
+        <p>
+          <span>🗓</span>
+          <span>{movie.Year}</span>
+        </p>
+      </div>
+    </li>
+  );
+}
+```
+
+#### 组件组合
+
+- 使用 children 属性（或明确定义的属性）组合复杂的组件
+- 作用
+  - 创建高度可重用和灵活的
+  - 修复属性钻取（非常适合布局）
+
+```jsx
+function Modal({ children }) {
+  return <div className="modal">{children}</div>;
+}
+```
+
+```jsx
+function Success() {
+  return <p>Success</p>;
+}
+```
+
+```jsx
+function Error() {
+  return <p>Error</p>;
+}
+```
+
+```jsx
+return (
+  <Modal>
+    <Success />
+  </Modal>
+);
+return (
+  <Modal>
+    <Error />
+  </Modal>
+);
+```
+
+- 组件组合解决属性钻取
+
+  ```jsx
+  function App() {
+    const [movies, setMovies] = useState(tempMovieData);
+
+    return (
+      <>
+        <NavBar>
+          <Search />
+          <NumResults movies={movies} />
+        </NavBar>
+      </>
+    );
+  }
+  ```
+
+  ```jsx
+  function NavBar({ children }) {
+    return (
+      <nav className="nav-bar">
+        <Logo />
+        {children}
+      </nav>
+    );
+  }
+  ```
+
+#### element 属性
+
+```jsx
+function Box({ children }) {
+  return <div className="box">{children}</div>;
+}
+```
+
+```jsx
+<Box>
+  <MovieList movies={movies} />
+</Box>
+```
+
+```jsx
+function Box({ element }) {
+  return <div className="box">{element}</div>;
+}
+```
+
+```jsx
+<Box element={<MovieList movies={movies} />} />
+```
+
+- element 属性名可自定义
+- React 并不推荐
+
+#### 属性默认值
+
+```jsx
+function StarRating({
+  maxRating = 5,
+  color = "#fcc419",
+  size = 48,
+  className = "",
+  messages = [],
+  defaultRating = 0,
+  onSetRating,
+}) {}
+```
+
+- 对于函数组件，在参数解构时直接为属性提供默认值
+
+#### propTypes
+
+```jsx
+StarRating.propTypes = {
+  maxRating: PropTypes.number,
+  defaultRating: PropTypes.number,
+  color: PropTypes.string,
+  size: PropTypes.number,
+  messages: PropTypes.array,
+  className: PropTypes.string,
+  onSetRating: PropTypes.func,
+};
+function StarRating({
+  maxRating = 5,
+  color = "#fcc419",
+  size = 48,
+  className = "",
+  messages = [],
+  defaultRating = 0,
+  onSetRating,
+}) {}
+```
+
+- propTypes：类型检查，现已不常用，可用 ts 代替
+
+### React 运作原理概述
+
+#### 组件 组件实例 React 元素 DOM 元素
+
+组件>组件实例>React 元素>DOM 元素
+
+- 组件
+  - 用户界面说明
+  - 组件是一个返回 React 元素（元素树）的函数，元素通常写成 JSX
+  - 蓝图或模板
+- 组件实例
+  - 当我们使用组件时会创建实例
+  - 组件的实际表现形式
+  - 拥有自己的状态和属性
+  - 有生命周期
+- 组件实例与元素
+  - JSX 最终转换成 `React.createElement()` 函数的调用
+  - React 元素是函数调用的结果
+  - 组件实例返回 React 元素
+  - 创建 DOM 元素所需的信息
+  - 注意：直接调用组件函数会直接返回 React 元素
+
+#### React 相关运作原理
+
+- 组件相关
+
+  - 组件是用户界面片段的蓝图，使用组件时会创建组件实例，实例包含属性、状态等信息，渲染组件实例会返回 React 元素
+  - 绝不要在一个组件内部声明新组件，否则父组件重新渲染时会重置子组件状态，因 React 会视嵌套子组件为 “新的”
+
+- 渲染相关
+
+  - “渲染” 指调用组件函数并计算 DOM 元素变化的过程，与直接写 DOM 内容无关，组件实例渲染或重新渲染时渲染函数会再被调用
+  - 应用首次渲染及后续状态更新会触发整个应用渲染流程，影响相关组件
+  - 组件实例重新渲染时子组件也会重新渲染，但 React 的协调机制可检查元素变化情况，不过重新渲染仍可能影响性能
+
+- Diffing 机制与 key 属性
+
+  - Diffing 机制用于决定 DOM 元素的添加或修改，元素在树中位置等情况影响对应 DOM 元素和状态是否改变
+  - 给元素添加 key 属性可让 React 区分组件实例，key 不变元素保留在 DOM 中，改变 key 则元素会被销毁重建，可利用此重置状态
+
+- 渲染逻辑限制与 DOM 更新
+
+  - 组件实例生成 JSX 输出的渲染逻辑不能产生副作用，像调用 API、设置定时器等操作不允许在此进行，副作用允许在事件处理器和 useEffect 钩子中
+  - DOM 更新发生在提交阶段，由 ReactDOM 渲染器执行，React Web 应用需同时包含 React 和 ReactDOM 库，也可用其他渲染器用于不同平台应用开发
+
+- 状态更新与事件相关
+
+  - 事件处理器函数内多次状态更新会批处理，只触发一次重新渲染，状态更新是异步的，更新后不应立即访问状态变量，React 18 起超时操作也会批处理
+  - 使用事件时，React 提供合成事件对象确保在各浏览器工作一致，多数合成事件会冒泡，但 scroll 事件不会冒泡
+
+- React 性质相关
+
+  - React 是库而非框架，可使用第三方库组装应用
+
+### 数据获取 副作用
+
+[react-doc/05-usepopcorn](https://github.com/JacobSuCHN/react-doc/tree/main/code/05-usepopcorn)
+
+#### 组件（实例）声明周期
+
+- MOUNT / INITIAL RENDER
+  - 组件实例首次被渲染
+  - 创建新的状态（state）和属性（props）
+- RE-RENDER
+  - 触发时机：State、Props、Context 变化，Parent 重新渲染
+- UNMOUNT
+  - 组件实例已被销毁并移除
+  - 状态（state）和属性（props）已被销毁
+
+#### 副作用
+
+- 副作用：指 React 组件与组件外部世界之间的任何交互
+  - 可以将副作用视为切实执行某些操作的代码
+  - 例如：数据获取、设置订阅、设置定时器、手动访问 DOM 等等
+- React 严格模式
+  - `<React.StrictMode><App /></React.StrictMode>`
+  - 在开发环境中，React 开启严格模式后，副作用函数会执行两次
+
+#### useEffect
+
+```jsx
+import { useEffect, useState } from "react";
+
+function App() {
+  const [movies, setMovies] = useState([]);
+  useEffect(function () {
+    fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`)
+      .then((res) => res.json())
+      .then((data) => setMovies(data.Search));
+  }, []);
+  return <></>;
+}
+```
+
+- useEffect 函数不能返回 Promise
+  ```jsx
+  useEffect(function () {
+    async function fetchMovies() {
+      const res = await fetch(
+        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+      );
+      const data = await res.json();
+      setMovies(data.Search);
+    }
+  }, []);
+  ```
+
+#### useEffect 依赖数组
+
+- 默认情况下，副作用在每次渲染后都会运行，我们可以通过传递一个依赖数组来避免这种情况
+- 若没有依赖数组，React 就不知道何时运行副作用
+- 每当某个依赖项发生变化，副作用就会再次执行
+- 在副作用内部使用的每个状态变量和属性都必须包含在依赖数组中
+- 依赖数组的三种情况
+  - `useEffect(fn, [x, y, z]);`
+    - 同步：副作用与 x、y 和 z 同步
+    - 生命周期：在挂载以及因 x、y 或 z 更新而触发的重新渲染时运行
+  - `useEffect(fn, []);`
+    - 同步：副作用不与任何状态 / 属性同步
+    - 生命周期：仅在挂载（初始渲染）时运行
+  - `useEffect(fn);`
+    - 同步：副作用与所有状态和属性同步（即每次渲染时都会执行该副作用，因为所有可能的变化都能触发它）
+    - 生命周期：在每次渲染时运行（通常这样做不太好）
+
+#### useEffect 清理函数
+
+- 我们可以从副作用函数（可选）中返回的函数
+- 该函数会在两种不同情况下运行
+  - 在副作用再次执行之前
+  - 组件卸载之后
+- 每当组件重新渲染或卸载后，若副作用仍持续存在，这个返回函数就必不可少
+- 每个副作用应该只做一件事！为每个副作用使用一个 `useEffect` 钩子，这会让副作用的清理工作更简便
+
+```jsx
+useEffect(
+  function () {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    // 清理函数
+    return function () {
+      document.title = "usePopcorn";
+    };
+  },
+  [title]
+);
+```
+
+### Hooks
+
+[react-doc/05-usepopcorn](https://github.com/JacobSuCHN/react-doc/tree/main/code/05-usepopcorn)
+
+#### Hooks
+
+- 特殊的内置函数，使我们能够 “挂钩” 到 React 内部机制
+  - 从 Fiber 树中创建和访问状态
+  - 在 Fiber 树中注册副作用
+  - 手动选择 DOM
+  - …
+- 钩子函数名始终以 “use” 开头（如 useState、useEffect 等）
+- 它便于复用非可视化逻辑：我们可以将多个钩子组合成自定义钩子
+- 它赋予函数式组件拥有状态以及在不同生命周期节点运行副作用的能力（在 16.8 版本之前，这些能力仅类组件具备）
+- 内置 Hooks
+  - 常用
+    - useState
+    - useEffect
+    - useReducer
+    - useContext
+  - 不常用
+    - useRef
+    - useCallback
+    - useMemo
+    - useTransition
+    - useDeferredValue
+    - useLayoutEffect
+    - useDebugValue
+    - useImperativeHandle
+    - useId
+  - 仅适用于库
+    - useSyncExternalStore
+    - useInsertionEffect
+- 使用规则
+  - 只在顶层调用钩子函数
+    - 不要在条件语句、循环、嵌套函数中调用钩子函数，也不要在提前返回语句之后调用
+    - 这对于确保钩子函数始终以相同顺序调用是必要的（钩子函数依赖于此）
+  - 只从 React 函数中调用钩子函数
+    - 只在函数组件或自定义钩子内部调用钩子函数
+
+#### useState
+
+- `useState({})`的初始值只会在首次渲染的时候加载
+- 状态更新是异步的，当执行 set 时，无法立即获取更新的状态，只用当 React 处理完数据处理器才会更新所有状态并重新渲染页面
+  - 可以通过设置回调函数解决该问题
+  ```jsx
+  setAvgRating(Number(imdbRating));
+  setAvgRating((avgRating) => (avgRating + userRating) / 2);
+  ```
+- 创建 state
+  - 参数：值和回调函数（延迟计算）
+  - 函数必须是纯函数，且不接受任何参数
+  - 仅在初次渲染时调用
+- 更新 state
+  - 参数：值和回调函数
+  - 函数必须为纯函数，且返回下一个状态（函数的第一个参数代表该状态的前一个值）
+  - 务必不要对对象或数组进行直接修改，而是要替换它们
+
+#### useRef
+
+- “容器”（对象），具有可变的.current 属性，该属性在多次渲染中保持不变（“普通” 变量在每次渲染时都会重置）
+
+- 主要用例
+
+  - 创建一个在多次渲染间保持不变的变量（例如，上一个状态、setTimeout 的 ID 等）
+
+    - 普通变量在组件重新渲染时会重置
+
+    ```jsx
+    function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
+      // ...
+      const countRef = useRef(0);
+
+      useEffect(
+        function () {
+          if (userRating) countRef.current++;
+        },
+        [userRating]
+      );
+      // ...
+      function handleAdd() {
+        const newWatchedMovie = {
+          // ...
+          countRatingDecisions: countRef.current,
+        };
+        // ...
+      }
+      // ...
+      return (
+        <div className="details">
+          {
+            //...
+          }
+        </div>
+      );
+    }
+    ```
+
+  - 选择并存储 DOM 元素
+
+    ```jsx
+    import { useEffect, useRef, useState } from "react";
+    function Search({ query, setQuery }) {
+      const inputEl = useRef(null);
+
+      useEffect(function () {
+        inputEl.current.focus();
+      }, []);
+
+      return (
+        <input
+          className="search"
+          type="text"
+          placeholder="Search movies..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          ref={inputEl}
+        />
+      );
+    }
+    ```
+
+- Refs 用于存储不参与渲染的数据：通常仅出现在事件处理函数或副作用中，而非 JSX 中（否则应使用状态）
+
+- 不要在渲染逻辑中读写.current（这一点与状态类似）
+
+- state 与 refs
+
+  |           | 跨渲染保持 | 更新引发重渲染 | 不可变 | 异步更新 |
+  | --------- | ---------- | -------------- | ------ | -------- |
+  | **STATE** | √          | √              | √      | √        |
+  | **REFS**  | √          | ×              | ×      | ×        |
+
+#### 自定义 Hooks
+
+- 复用性
+
+  - UI：组件
+  - 逻辑
+    - 不包含钩子：常规函数
+    - 自定义钩子
+      - 自定义钩子让我们能够在多个组件中复用非可视化逻辑
+      - 一个自定义钩子应当只有一个用途，这样才能使其可复用且便于移植（甚至在多个项目间都能复用）
+      - 钩子的规则同样适用于自定义钩子
+
+- 自定义 Hooks
+
+  ```js
+  function useFetch(url) {
+    const [data, setData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(function () {
+      fetch(url)
+        .then((res) => res.json())
+        .then((res) => setData(res));
+    }, []);
+    return [data, isLoading];
+  }
+  ```
+
+  - `useFetch`：函数名必须以 use 开头
+  - `useEffect`：至少使用一个钩子
+  - `return [data, isLoading]`：与组件不同，可以接收和返回数据（通常是数组[]或对象{}形式）
