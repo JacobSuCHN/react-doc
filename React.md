@@ -1400,3 +1400,192 @@ function DateCounter() {
   - 通过向 reducer 派发一个 action 来更新状态
   - 这是声明式的状态更新方式：复杂的状态转换被映射到各个 action 上
   - 理解和实现起来难度稍高
+
+### React Router
+
+[react-doc/07-worldwise](https://github.com/JacobSuCHN/react-doc/tree/main/code/07-worldwise)
+
+#### SPA
+
+- 路由
+  - 通过路由，我们将不同的 URL 与不同的用户界面视图（React 组件）进行匹配：这些匹配关系就是路由
+  - 这使用户能够借助浏览器的 URL，在应用程序的不同屏幕之间进行导航
+  - 它能让用户界面与当前浏览器的 URL 保持同步
+  - 还让我们能够构建单页应用程序
+- SPA：单页面应用
+  - 完全在客户端（浏览器）运行的应用程序
+  - 路由：不同的 URL 对应不同的视图（组件）
+  - 借助 JavaScript（React）来更新页面（DOM）
+  - 页面永不刷新
+  - 使用起来宛如原生应用
+  - 还能从 Web API 加载额外数据
+
+#### React Router 使用
+
+- 安装：`npm install react-router-dom`
+- 配置路由
+
+  ```jsx
+  import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+  import Homepage from "./pages/Homepage";
+  import Product from "./pages/Product";
+  import Pricing from "./pages/Pricing";
+  import PageNotFound from "./pages/PageNotFound";
+
+  function App() {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<Homepage />} />
+          <Route path="product" element={<Product />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  export default App;
+  ```
+
+- 路由导航
+
+  ```jsx
+  import { Link } from "react-router-dom";
+
+  export default function Homepage() {
+    return (
+      <main>
+        <Link to="/pricing">Pricing</Link>
+      </main>
+    );
+  }
+  ```
+
+  - NavLink：功能与 Link 类似；NavLink 处于活动状态，它就会自动拥有一个 .active 类名，便于使用 CSS 进行样式设计
+
+#### 嵌套路由
+
+```jsx
+<Route path="app" element={<AppLayout />}>
+  <Route index element={<Navigate replace to="cities" />} />
+  <Route path="cities" element={<CityList />} />
+  <Route path="countries" element={<CountryList />} />
+  <Route path="form" element={<Form />} />
+</Route>
+```
+
+```jsx
+import { Outlet } from "react-router-dom";
+function Sidebar() {
+  return (
+    <div>
+      {/* ... */}
+      <Outlet />
+      {/* ... */}
+    </div>
+  );
+}
+
+export default Sidebar;
+```
+
+- React 路由器支持嵌套路由
+- 为了让子路由在父布局内部呈现，我们需要在父布局中呈现 Outlet
+- 索引路由在父路由的 URL 上呈现为父路由的 `<Outlet/>` （就像默认的子路由）
+- 索引路由使用 index 配置
+
+#### 路由参数
+
+```jsx
+<Route path="cities/:id" element={<City />} />
+```
+
+```jsx
+<Link to={`${id}?lat=${position.lat}&lng=${position.lng}`}>{/*  */}</Link>
+```
+
+#### useParams
+
+```jsx
+import { useParams } from "react-router-dom";
+const { id } = useParams();
+```
+
+- 在这种情况下， :id 是动态数据段。该城市的解析值将从 useParams 中获得
+
+#### useSearchParams
+
+```jsx
+import { useSearchParams } from "react-router-dom";
+const [searchParams, setSearchParams] = useSearchParams();
+const lat = searchParams.get("lat");
+const lng = searchParams.get("lng");
+return (
+  <div>
+    <button
+      onClick={() => {
+        setSearchParams({ lat: 23, lng: 50 });
+      }}
+    >
+      change pos
+    </button>
+  </div>
+);
+```
+
+- 搜索参数是 URL 中 ? 后面的值。它们可通过 useSearchParams 访问，useSearchParams 返回 URLSearchParams 的实例
+
+#### useNavigate
+
+```jsx
+import { useNavigate } from "react-router-dom";
+const navigate = useNavigate();
+navigate("/app/cities");
+navigate(-1);
+```
+
+#### Navigate 组件
+
+```jsx
+import { Route, Navigate } from "react-router-dom";
+<Route index element={<Navigate replace to="cities" />} />;
+```
+
+- 类似于重定向
+
+#### CSS 模块
+
+- 使用
+
+  - 文件名：`xxx.module.css`
+
+    ```css
+    .nav {
+      background-color: orange;
+    }
+
+    .nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+    }
+    :global(.test) {
+      background-color: red;
+    }
+    ```
+
+  - 语法：与 css 相似，全局使用时用`:global(xxx)`包裹选择器，类名建议使用驼峰
+
+  - 引入
+
+    ```jsx
+    import styles from "./AppLayout.module.css";
+
+    function AppLayout() {
+      return <div className={styles.app}></div>;
+    }
+
+    export default AppLayout;
+    ```
