@@ -1281,3 +1281,122 @@ useEffect(
   - `useFetch`：函数名必须以 use 开头
   - `useEffect`：至少使用一个钩子
   - `return [data, isLoading]`：与组件不同，可以接收和返回数据（通常是数组[]或对象{}形式）
+
+## React 进阶
+
+### useReducer
+
+[react-doc/06-react-quiz](https://github.com/JacobSuCHN/react-doc/tree/main/code/06-react-quiz)
+
+#### useReducer 使用
+
+```jsx
+import { useReducer } from "react";
+
+const initialState = { count: 0, step: 1 };
+
+function reducer(state, action) {
+  console.log(state, action);
+
+  switch (action.type) {
+    case "dec":
+      return { ...state, count: state.count - state.step };
+    case "inc":
+      return { ...state, count: state.count + state.step };
+    case "setCount":
+      return { ...state, count: action.payload };
+    case "setStep":
+      return { ...state, step: action.payload };
+    case "reset":
+      return initialState;
+    default:
+      throw new Error("Unknown action");
+  }
+}
+
+function DateCounter() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { count, step } = state;
+
+  const date = new Date("june 21 2027");
+  date.setDate(date.getDate() + count);
+
+  const dec = function () {
+    dispatch({ type: "dec" });
+  };
+
+  const inc = function () {
+    dispatch({ type: "inc" });
+  };
+
+  const defineCount = function (e) {
+    dispatch({ type: "setCount", payload: Number(e.target.value) });
+  };
+
+  const defineStep = function (e) {
+    dispatch({ type: "setStep", payload: Number(e.target.value) });
+  };
+
+  const reset = function () {
+    dispatch({ type: "reset" });
+  };
+
+  return (
+    <div className="counter">
+      <div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          value={step}
+          onChange={defineStep}
+        />
+        <span>{step}</span>
+      </div>
+
+      <div>
+        <button onClick={dec}>-</button>
+        <input value={count} onChange={defineCount} />
+        <button onClick={inc}>+</button>
+      </div>
+
+      <p>{date.toDateString()}</p>
+
+      <div>
+        <button onClick={reset}>Reset</button>
+      </div>
+    </div>
+  );
+}
+```
+
+- 为什么使用 useReducer
+
+  - 在某些情况下，仅使用 useState 进行状态管理是不够的
+  - 当组件拥有大量的状态变量，并且状态更新分散在组件各处的众多事件处理程序中时
+  - 当需要同时进行多个状态更新时（作为对同一事件的响应，比如 “开始一场游戏”）
+  - 当更新某一个状态依赖于一个或多个其他状态时
+
+- 使用 useReducer 管理状态
+
+  - 一种设置状态的替代方式，非常适合管理复杂状态以及相关联的状态片段
+  - 将相关联的状态片段存储在一个状态对象中
+  - useReducer 需要 reducer：这是一个包含所有更新状态逻辑的函数，它将状态逻辑与组件解耦
+  - reducer：是一个纯函数（无副作用！），接收当前状态和动作，并返回下一个状态
+  - action：一个描述如何更新状态的对象
+  - dispatch：一个用于触发状态更新的函数，通过将事件处理程序中的动作“发送”给 reducer 来实现
+
+#### useState VS useReducer
+
+- useState
+  - 适用于单个、独立的状态片段（数字、字符串、单个数组等）
+  - 更新状态的逻辑直接置于事件处理函数或副作用中，分散在一个或多个组件里
+  - 通过调用 setState（useState 返回的设置函数）来更新状态
+  - 这是命令式的状态更新方式
+  - 易于理解和使用
+- useReducer
+  - 适用于多个相关的状态片段以及复杂状态（例如包含多个值的对象，还有嵌套对象或数组）
+  - 更新状态的逻辑集中存于一处，与组件解耦，这个地方就是 reducer
+  - 通过向 reducer 派发一个 action 来更新状态
+  - 这是声明式的状态更新方式：复杂的状态转换被映射到各个 action 上
+  - 理解和实现起来难度稍高
