@@ -1589,3 +1589,130 @@ import { Route, Navigate } from "react-router-dom";
 
     export default AppLayout;
     ```
+
+### Context API
+
+[react-doc/08-atomic-blog](https://github.com/JacobSuCHN/react-doc/tree/main/code/08-atomic-blog)
+
+#### Context API 概述
+
+- 无需手动在组件树中逐层传递属性，即可在应用程序中传递数据的系统
+- 该系统允许我们将全局状态 “广播” 到整个应用程序
+  - Provider（提供者）：使所有子组件都能访问某个值
+  - value（值）：我们希望提供的数据（通常是状态和函数）
+  - Consumers（消费者）：所有读取所提供上下文值的组件
+
+#### Context API 使用
+
+- 创建上下文
+
+```jsx
+const PostContext = createContext();
+```
+
+- 向子组件提供值
+
+```jsx
+return (
+  <PostContext.Provider
+    value={{
+      posts: searchedPosts,
+      onAddPost: handleAddPost,
+      onClearPosts: handleClearPosts,
+      searchQuery,
+      setSearchQuery,
+    }}
+  >
+    <section>
+      <Header />
+      <Main />
+      <Archive />
+      <Footer />
+    </section>
+  </PostContext.Provider>
+);
+```
+
+- 使用上下文值
+
+```jsx
+const { onClearPosts } = useContext(PostContext);
+```
+
+#### 自定义 Provider 组件
+
+```jsx
+import { useEffect, useState } from "react";
+import { PostProvider, usePosts } from "./PostContext";
+function App() {
+  return (
+    <section>
+      <PostProvider>
+        <Header />
+      </PostProvider>
+    </section>
+  );
+}
+function Header() {
+  const { onClearPosts } = usePosts();
+  return (
+    <header>
+      <button onClick={onClearPosts}>Clear posts</button>
+    </header>
+  );
+}
+export default App;
+```
+
+```jsx
+import { createContext, useContext, useState } from "react";
+import { faker } from "@faker-js/faker";
+function createRandomPost() {
+  return {
+    title: `${faker.hacker.adjective()} ${faker.hacker.noun()}`,
+    body: faker.hacker.phrase(),
+  };
+}
+const PostContext = createContext();
+function PostProvider({ children }) {
+  const [posts, setPosts] = useState(() =>
+    Array.from({ length: 30 }, () => createRandomPost())
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchedPosts =
+    searchQuery.length > 0
+      ? posts.filter((post) =>
+          `${post.title} ${post.body}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
+      : posts;
+  function handleAddPost(post) {
+    setPosts((posts) => [post, ...posts]);
+  }
+  function handleClearPosts() {
+    setPosts([]);
+  }
+  return (
+    <PostContext.Provider
+      value={{
+        posts: searchedPosts,
+        onAddPost: handleAddPost,
+        onClearPosts: handleClearPosts,
+        searchQuery,
+        setSearchQuery,
+      }}
+    >
+      {children}
+    </PostContext.Provider>
+  );
+}
+
+function usePosts() {
+  const context = useContext(PostContext);
+  if (context === undefined)
+    throw new Error("PostContext was used outside of the PostProvider");
+  return context;
+}
+export { PostProvider, usePosts };
+```
