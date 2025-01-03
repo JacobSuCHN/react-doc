@@ -1716,3 +1716,253 @@ function usePosts() {
 }
 export { PostProvider, usePosts };
 ```
+
+### 性能优化
+
+[react-doc/07-worldwise](https://github.com/JacobSuCHN/react-doc/tree/main/code/07-worldwise)
+[react-doc/08-atomic-blog](https://github.com/JacobSuCHN/react-doc/tree/main/code/08-atomic-blog)
+
+#### 性能优化工具
+
+- 性能优化
+  - 避免无效渲染
+    - memo
+    - useMemo
+    - useCallback
+    - 将元素作为子组件（children）或普通属性（prop）传递传递
+  - 提高应用程序速度 / 响应性
+    - useMemo
+    - useCallback
+    - useTransition
+  - 减小打包体积
+    - 减少第三方包的使用
+    - 代码分割与懒加载
+- 组件实例何时重新渲染
+  - 状态变更
+  - 上下文变更
+  - 父组件重新渲染
+- 无效渲染：指未在 DOM 中产生任何变化的渲染；只有当无效渲染发生得过于频繁，或者组件运行极为缓慢时，才会成为问题
+
+#### children
+
+```jsx
+function Test() {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <h1>Slow counter?!?</h1>
+      <button onClick={() => setCount((c) => c + 1)}>Increase: {count}</button>
+
+      <SlowComponent />
+    </div>
+  );
+}
+```
+
+- 情况：慢组件嵌套在另一个组件中
+- 解决方案：外层组件更新时，内存组件不需要更新
+
+```jsx
+function Counter({ children }) {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <h1>Slow counter?!?</h1>
+      <button onClick={() => setCount((c) => c + 1)}>Increase: {count}</button>
+
+      {children}
+    </div>
+  );
+}
+```
+
+```jsx
+function Test() {
+  return (
+    <div>
+      <h1>Slow counter?!?</h1>
+      <Counter>
+        <SlowComponent />
+      </Counter>
+    </div>
+  );
+}
+```
+
+- 慢组件在计数器组件更新前就已经渲染
+- 上下文组件就涉及该特性
+
+#### 记忆化
+
+- 记忆化
+  - 一种优化技术，它会执行一次纯函数，并将结果存储在内存中
+  - 如果我们尝试使用与之前相同的参数再次执行该函数，将会直接返回之前存储的结果，而无需再次执行该函数
+- React 记忆化
+  - 使用 memo 对组件进行记忆化处理
+  - 使用 useMemo 对对象进行记忆化处理
+  - 使用 useCallback 对函数进行记忆化处理
+  - 作用
+    - 防止无效渲染
+    - 提升应用速度 / 响应性
+
+#### memo 函数
+
+- 用于创建一个组件，当它的父组件重新渲染时，只要两次渲染间传入的 props 保持不变，该组件就不会重新渲染。
+- 仅影响 props！一个经过记忆化处理的组件，在其自身状态发生变化，或者它所订阅的上下文发生变化时，仍然会重新渲染。
+- 仅当该组件渲染开销大（渲染缓慢）、频繁重新渲染，且重新渲染时 props 不变的情况下，才有意义
+
+```jsx
+import { memo } from "react";
+const Archive = memo(function Archive({ show }) {
+  return {
+    // ...
+  };
+});
+```
+
+#### useMemo && useCallback
+
+- 用于在多次渲染之间对值（使用 useMemo）和函数（使用 useCallback）进行记忆化处理
+- 传入 useMemo 和 useCallback 的值会存储在内存中（“缓存”），并且只要依赖项（“输入”）保持不变，在后续的重新渲染中就会返回这些值
+- useMemo 和 useCallback 都有一个依赖项数组（类似于 useEffect）：每当其中一个依赖项发生变化，值就会被重新创建
+- 仅在三种使用场景之一中使用它们！
+  - 与 memo 配合对属性进行记忆化处理，以防止无效渲染
+  - 对值进行记忆化处理，避免在每次渲染时进行开销较大的重新计算
+  - 对用于另一个钩子函数依赖数组中的值进行记忆化处理
+- useMemo
+
+```jsx
+function App() {
+  const [posts, setPosts] = useState(() =>
+    Array.from({ length: 30 }, () => createRandomPost())
+  );
+  const archiveOptions = useMemo(() => {
+    return {
+      show: false,
+      title: `Post archive in addition to ${posts.length} main posts`,
+    };
+  }, [posts.length]);
+  return <Archive archiveOptions={archiveOptions} />;
+}
+```
+
+```jsx
+const Archive = memo(function Archive({ archiveOptions }) {
+  return <h2>{archiveOptions.title}</h2>;
+});
+```
+
+- useCallback
+
+```jsx
+function App() {
+  const [posts, setPosts] = useState(() =>
+    Array.from({ length: 30 }, () => createRandomPost())
+  );
+  const handleAddPost = useCallback(function handleAddPost(post) {
+    setPosts((posts) => [post, ...posts]);
+  }, []);
+  const archiveOptions = useMemo(() => {
+    return {
+      show: false,
+      title: `Post archive in addition to ${posts.length} main posts`,
+    };
+  }, [posts.length]);
+  return <Archive archiveOptions={archiveOptions} onAddPost={handleAddPost} />;
+}
+```
+
+```jsx
+const Archive = memo(function Archive({ archiveOptions, onAddPost }) {
+  const [posts] = useState(() =>
+    Array.from({ length: 30000 }, () => createRandomPost())
+  );
+
+  const [showArchive, setShowArchive] = useState(archiveOptions.show);
+
+  return (
+    <>
+      <h2>{archiveOptions.title}</h2>
+      <button onClick={() => onAddPost(post)}>Add as new post</button>
+    </>
+  );
+});
+```
+
+#### 代码包
+
+- 代码包：包含整个应用程序代码的 JavaScript 文件；下载该代码包将一次性加载整个应用程序，使其成为单页应用程序（SPA）
+- 代码包大小：用户为开始使用应用程序而必须下载的 JavaScript 代码量；这是需要优化的最重要因素之一，目的是缩短代码包的下载时间
+- 代码分割：将代码包分割成多个部分，这些部分可以逐步下载（即 “懒加载”）
+
+```jsx
+import { lazy, Suspense } from "react";
+const Homepage = lazy(() => import("./pages/Homepage"));
+```
+
+```jsx
+import { Suspense } from "react";
+function App() {
+  return (
+    <AuthProvider>
+      <CitiesProvider>
+        <BrowserRouter>
+          <Suspense fallback={<SpinnerFullPage />}>
+            <Routes>
+              <Route index element={<Homepage />} />
+              {/* ... */}
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </CitiesProvider>
+    </AuthProvider>
+  );
+}
+```
+
+#### 性能优化注意事项
+
+- 优化事项
+
+  - 使用性能分析器和可视化检查（界面卡顿情况）来找出性能瓶颈
+  - 解决这些实际的性能问题
+  - 对开销大的重渲染进行记忆化处理
+  - 对开销大的计算进行记忆化处理
+  - 如果上下文有众多使用者且频繁变化，对其进行优化
+  - 对上下文值和子组件进行记忆化处理
+  - 针对单页应用（SPA）的路由，实现代码分割和懒加载
+
+- 避免事项
+  - 切勿过早优化！
+  - 如果没有需要优化的地方，就不要进行任何优化...
+  - 不要将所有组件都用 memo() 包裹
+  - 不要将所有值都用 useMemo() 包裹
+  - 不要将所有函数都用 useCallback() 包裹
+  - 如果上下文运行不慢且没有众多使用者，就不要对其进行优化
+
+#### useEffect 注意事项
+
+- 依赖项数组规则
+  - 在 useEffect 内部使用的每一个状态变量、属性以及上下文值，都必须包含在依赖数组中。
+  - 所有 “响应式值” 都得包含进来！这指的是，任何引用了其他响应式值的函数或变量都在此列。
+  - 依赖项是自动确定的：绝不要忽视 ESLint 的 “exhaustive - deps” 规则！
+  - 不要把对象或数组用作依赖项（每次渲染时对象都会重新创建，React 会把新创建的对象视为不同的对象，比如 {}!== {}
+  - 响应式值：指状态、属性、上下文值，或任何引用了其他响应式值的其他值
+  - 同样的规则也适用于其他钩子函数的依赖数组：useMemo 和 useCallback
+- 移除不必要的依赖项
+  - 移除函数依赖项
+    - 将函数移入副作用
+    - 如果你在多个地方需要该函数，对其进行记忆化处理（使用 useCallback）
+    - 如果该函数不引用任何响应式值，将其移出组件。
+  - 移除对象依赖项
+    - 不要包含整个对象，而是只包含你需要的属性（基本类型值）
+    - 如果上述方法不可行，采用与处理函数相同的策略（移动对象或对对象进行记忆化处理）
+  - 其他策略
+    - 如果你有多个相关的响应式值作为依赖项，可以尝试使用 reducer（useReducer）
+    - 你无需将 setState（来自 useState）和 dispatch（来自 useReducer）包含在依赖项中，因为 React 保证它们在每次渲染时都保持稳定
+- 何时不使用副作用
+  - 只有在其他方法都行不通时，才应将副作用作为最后的手段。React 将其称为跳出 React 常规流程的 “逃生舱口”
+  - 以下是三种副作用被过度使用的情况（初学者应避免这些情况）
+    - 响应用户事件。此时应使用事件处理函数代替
+    - 在组件挂载时获取数据。在小型应用中这样做尚可，但在实际项目中，应使用类似 React Query 这样的库
+    - 同步状态变化（根据另一个状态变量设置状态）。尽量使用派生状态和事件处理函数
