@@ -1966,3 +1966,19 @@ function App() {
     - 响应用户事件。此时应使用事件处理函数代替
     - 在组件挂载时获取数据。在小型应用中这样做尚可，但在实际项目中，应使用类似 React Query 这样的库
     - 同步状态变化（根据另一个状态变量设置状态）。尽量使用派生状态和事件处理函数
+
+### Redux
+
+[react-doc/09-redux-intro](https://github.com/JacobSuCHN/react-doc/tree/main/code/09-redux-intro)
+
+#### Redux 概述
+
+- 用于管理全局状态的第三方库
+- 独立库，但借助 react-redux 库可轻松与 React 应用集成
+- 所有全局状态都存储在一个全局可访问的存储（store）中，通过 “action”（类似 useReducer）可轻松更新
+- 从概念上讲，它类似于使用 Context API + useReducer
+- 有两个 “版本”：（1）经典 Redux，（2）现代 Redux Toolkit
+
+#### Redux 使用
+
+[react-doc/09-redux-intro](https://github.com/JacobSuCHN/react-doc/tree/main/code/09-redux-intro)
